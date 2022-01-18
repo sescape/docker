@@ -1,0 +1,53 @@
+# -v option of docker run is used to mount host volume to a container
+# If the host path is ommitted, you create a data container. 
+# The volume specified is created inside the container as a read-write filesystem 
+# not layered on top of the read-only layers used to create the container image.
+# Docker manages the filesystem, butyou can read and write to it from the host
+$ docker run -ti -v /cookbook ubuntu:14.04 /bin/bash
+root@24ee193c9eaf:/# touch /cookbook/foobar
+root@24ee193c9eaf:/# ls -al cookbook/
+total 8
+drwxr-xr-x 2 root root 4096 Jan 18 19:38 .
+drwxr-xr-x 1 root root 4096 Jan 18 19:38 ..
+-rw-r--r-- 1 root root    0 Jan 18 19:38 foobar
+root@24ee193c9eaf:/# exit
+exit
+
+# on host
+sadsyed@sadsyed-vm:~/dockercookbook$ docker inspect -f {{.Mounts}} 24ee193c9eaf
+[{volume 4478e76b861cfe0b57ebbca50545ae0fedf8e6ef7a77aba0ba6cc5a8ac1200b9 /var/lib/docker/volumes/4478e76b861cfe0b57ebbca50545ae0fedf8e6ef7a77aba0ba6cc5a8ac1200b9/_data /cookbook local  true }]
+sadsyed@sadsyed-vm:~/dockercookbook$ sudo ls /var/lib/docker/volumes/4478e76b861cfe0b57ebbca50545ae0fedf8e6ef7a77aba0ba6cc5a8ac1200b9/_data
+[sudo] password for sadsyed:
+foobar
+sadsyed@sadsyed-vm:~/dockercookbook$ sudo touch /var/lib/docker/volumes/4478e76b861cfe0b57ebbca50545ae0fedf8e6ef7a77aba0ba6cc5a8ac1200b9/_data/foobarhost
+
+# clean up
+sadsyed@sadsyed-vm:~/dockercookbook$ docker ps -a
+CONTAINER ID   IMAGE          COMMAND       CREATED         STATUS                     PORTS     NAMES
+24ee193c9eaf   ubuntu:14.04   "/bin/bash"   4 minutes ago   Exited (0) 3 minutes ago             vigilant_hellman
+sadsyed@sadsyed-vm:~/dockercookbook$ docker stop 24ee193c9eaf
+24ee193c9eaf
+sadsyed@sadsyed-vm:~/dockercookbook$ docker rm 24ee193c9eaf
+24ee193c9eaf
+
+# create a data container
+sadsyed@sadsyed-vm:~/dockercookbook$ docker run -v /data --name data ubuntu:14.04
+sadsyed@sadsyed-vm:~/dockercookbook$ docker ps
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+sadsyed@sadsyed-vm:~/dockercookbook$ docker ps -a
+CONTAINER ID   IMAGE          COMMAND       CREATED         STATUS                     PORTS     NAMES
+d54d846042bc   ubuntu:14.04   "/bin/bash"   9 seconds ago   Exited (0) 8 seconds ago             data
+sadsyed@sadsyed-vm:~/dockercookbook$ docker inspect -f {{.Mounts}} data
+[{volume 3bb89651c8f369d28763ecdbd26c62bdf51ade19d79a2d544fc4d14aa6088f1d /var/lib/docker/volumes/3bb89651c8f369d28763ecdbd26c62bdf51ade19d79a2d544fc4d14aa6088f1d/_data /data local  true }]
+
+# start another container that will mount the volume from the above source data container
+sadsyed@sadsyed-vm:~/dockercookbook$ docker run -ti --volumes-from data ubuntu:14.04 /bin/bash
+root@c24505b3ed9f:/# touch /data/foobarc24505b3ed9f
+root@c24505b3ed9f:/# exit
+exit
+sadsyed@sadsyed-vm:~/dockercookbook$ sudo /var/lib/docker/volumes/3bb89651c8f369d28763ecdbd26c62bdf51ade19d79a2d544fc4d14aa6088f1d/_data
+sudo: /var/lib/docker/volumes/3bb89651c8f369d28763ecdbd26c62bdf51ade19d79a2d544fc4d14aa6088f1d/_data: command not found
+sadsyed@sadsyed-vm:~/dockercookbook$ sudo ls /var/lib/docker/volumes/3bb89651c8f369d28763ecdbd26c62bdf51ade19d79a2d544fc4d14aa6088f1d/_data
+foobarc24505b3ed9f
+
+# Note: even if the data container is not running, you can mount the volume from it with the --volumes-from option
