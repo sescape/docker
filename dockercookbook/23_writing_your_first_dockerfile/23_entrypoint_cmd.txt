@@ -1,0 +1,105 @@
+# 2.3 Writing Your First Dockerfile
+## docker build . // when building from the directory that contains the Dockerfile 
+## If you want to do an build of an image based on a Dockerfile that is in a different location,
+## then use the -f option of docker build and specify the path
+
+# Dockerfile: this text file uses a set of instructions to describe 
+## which base image the new container is based on, 
+## what steps need to be taken to install various dependencies and applications
+## what files need to be present in the image, how they are made available to a container,
+## what ports should be exposed, 
+## and what command should run when a container starts
+## as well as a few other things
+
+ 
+sadsyed@sadsyed-vm:~/docker/dockercookbook/23_writing_your_first_dockerfile$ vi Dockerfile
+sadsyed@sadsyed-vm:~/docker/dockercookbook/23_writing_your_first_dockerfile$ cat Dockerfile
+FROM ubuntu:14.04
+
+ENTRYPOINT ["/bin/echo"]
+
+# FROM instruction tells you which image to base the new image off of 
+# ENTRYPOINT instruction tells you which command to run when a container based on this image is started
+# ENTRYPOINT can be overwriiten only by using the --entrypoint option of docker run
+
+# To build an image, issue a docker build .
+sadsyed@sadsyed-vm:~/docker/dockercookbook/23_writing_your_first_dockerfile$ docker build .
+Sending build context to Docker daemon  2.048kB
+Step 1/2 : FROM ubuntu:14.04
+ ---> 13b66b487594
+Step 2/2 : ENTRYPOINT ["/bin/echo"]
+ ---> Running in a69b8a7feca8
+Removing intermediate container a69b8a7feca8
+ ---> 7cadc7b46d19
+Successfully built 7cadc7b46d19
+
+sadsyed@sadsyed-vm:~/docker/dockercookbook/23_writing_your_first_dockerfile$ docker images
+REPOSITORY   TAG       IMAGE ID       CREATED          SIZE
+<none>       <none>    7cadc7b46d19   29 seconds ago   197MB
+python       2.7       68e7be49c28c   21 months ago    902MB
+
+# Run echo in the freshly built image
+sadsyed@sadsyed-vm:~/docker/dockercookbook/23_writing_your_first_dockerfile$ docker run 7cadc7b46d19 Hi Docker!
+Hi Docker!
+
+# CMD instruction in a Dockerfile has the advantage to overwrite the CMD behavior when you launch
+## a container, by passing a new CMD as an argument to docker run .
+sadsyed@sadsyed-vm:~/docker/dockercookbook/23_writing_your_first_dockerfile$ vi Dockerfile
+sadsyed@sadsyed-vm:~/docker/dockercookbook/23_writing_your_first_dockerfile$ cat Dockerfile
+FROM ubuntu:14.04
+
+#ENTRYPOINT ["/bin/echo"]
+
+CMD ["/bin/echo", "Hi Docker!"]
+
+sadsyed@sadsyed-vm:~/docker/dockercookbook/23_writing_your_first_dockerfile$ docker build .
+Sending build context to Docker daemon  2.048kB
+Step 1/2 : FROM ubuntu:14.04
+ ---> 13b66b487594
+Step 2/2 : CMD ["/bin/echo", "Hi Docker!"]
+ ---> Running in e16934659e4c
+Removing intermediate container e16934659e4c
+ ---> 3257020f283b
+Successfully built 3257020f283b
+
+sadsyed@sadsyed-vm:~/docker/dockercookbook/23_writing_your_first_dockerfile$ docker images
+REPOSITORY   TAG       IMAGE ID       CREATED         SIZE
+<none>       <none>    3257020f283b   7 seconds ago   197MB
+<none>       <none>    7cadc7b46d19   4 minutes ago   197MB
+python       2.7       68e7be49c28c   21 months ago   902MB
+
+sadsyed@sadsyed-vm:~/docker/dockercookbook/23_writing_your_first_dockerfile$ docker run 3257020f283b
+Hi Docker!
+
+# Building an image with a tag, use -t of docker build
+sadsyed@sadsyed-vm:~/docker/dockercookbook/23_writing_your_first_dockerfile$ docker build -t cookbook:hello .
+Sending build context to Docker daemon  6.144kB
+Step 1/2 : FROM ubuntu:14.04
+ ---> 13b66b487594
+Step 2/2 : CMD ["/bin/echo", "Hi Docker!"]
+ ---> Using cache
+ ---> 3257020f283b
+Successfully built 3257020f283b
+Successfully tagged cookbook:hello
+
+sadsyed@sadsyed-vm:~/docker/dockercookbook/23_writing_your_first_dockerfile$ docker images
+REPOSITORY   TAG       IMAGE ID       CREATED          SIZE
+cookbook     hello     3257020f283b   19 minutes ago   197MB
+<none>       <none>    7cadc7b46d19   24 minutes ago   197MB
+python       2.7       68e7be49c28c   21 months ago    902MB
+
+# The docker build command has a couple of options to deal with intermediate containers:
+
+sadsyed@sadsyed-vm:~/docker/dockercookbook/23_writing_your_first_dockerfile$ docker build -h
+Flag shorthand -h has been deprecated, please use --help
+
+Usage:  docker build [OPTIONS] PATH | URL | -
+
+Build an image from a Dockerfile
+
+Options:
+      --force-rm                Always remove intermediate containers
+      --no-cache                Do not use cache when building the image
+  -q, --quiet                   Suppress the build output and print image ID on success
+      --rm                      Remove intermediate containers after a successful build (default true)
+  -t, --tag list                Name and optionally a tag in the 'name:tag' format
