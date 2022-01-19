@@ -1,0 +1,37 @@
+# start a container that will just sleep
+sadsyed@sadsyed-vm:~$ docker run -d --name testcopy ubuntu:14.04 sleep 360
+6a8d51a16468140ed238dc889ef93823608f463bdaaa8ae434ce1d8229d94e6d
+
+# enter the container and create a file manually
+sadsyed@sadsyed-vm:~$ docker exec -ti testcopy /bin/bash
+root@6a8d51a16468:/# cd /root
+root@6a8d51a16468:~# echo 'I am in the container' > file6a8d51a16468.txt
+root@6a8d51a16468:~# exit
+exit
+
+# now get the file that you created in the container back in the host
+sadsyed@sadsyed-vm:~$ docker cp testcopy:/root/file6a8d51a16468.txt .
+sadsyed@sadsyed-vm:~$ cat file6a8d51a16468.txt
+I am in the container
+
+# create a file on the host and copy it to the container
+sadsyed@sadsyed-vm:~$ echo 'I am in the host' > host.txt
+sadsyed@sadsyed-vm:~$ docker cp host.txt testcopy:/root/host.txt
+
+# verify the host file is copied to the container
+sadsyed@sadsyed-vm:~$ docker exec -ti testcopy /bin/bash
+root@6a8d51a16468:/# ls -al /root/
+total 28
+drwx------ 1 root root 4096 Jan 18 20:10 .
+drwxr-xr-x 1 root root 4096 Jan 18 20:10 ..
+-rw------- 1 root root   66 Jan 18 20:08 .bash_history
+-rw-r--r-- 1 root root 3106 Feb 20  2014 .bashrc
+-rw-r--r-- 1 root root  140 Feb 20  2014 .profile
+-rw-r--r-- 1 root root   22 Jan 18 20:08 file6a8d51a16468.txt
+-rw-rw-r-- 1 1000 1000   17 Jan 18 20:09 host.txt
+root@6a8d51a16468:/# exit
+exit
+
+## to copy from one container to another container
+$ docker cp c1:/root/file.txt .
+$ docker file.txt c2:/root/file.txt

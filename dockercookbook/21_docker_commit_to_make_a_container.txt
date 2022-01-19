@@ -1,0 +1,67 @@
+# start a container with an interactive bash shell and update the packages in it
+sadsyed@sadsyed-vm:~$ docker run -t -i ubuntu:14.04 /bin/bash
+root@89231f532fa3:/# apt-get update
+Ign http://archive.ubuntu.com trusty InRelease
+Get:1 http://security.ubuntu.com trusty-security InRelease [65.9 kB]
+Get:2 http://archive.ubuntu.com trusty-updates InRelease [65.9 kB]
+Get:3 http://security.ubuntu.com trusty-security/main amd64 Packages [1032 kB]
+....
+Get:21 http://archive.ubuntu.com trusty/restricted amd64 Packages [16.0 kB]
+Get:22 http://archive.ubuntu.com trusty/universe amd64 Packages [7589 kB]
+Get:23 http://archive.ubuntu.com trusty/multiverse amd64 Packages [169 kB]
+Fetched 14.0 MB in 14s (974 kB/s)
+Reading package lists... Done
+root@89231f532fa3:/# exit
+exit
+
+# host commands
+# Before you remove the container you can commit the changes made to the container
+# and create a new image, ubuntu:update
+# The name of the image is ubuntu, and a tag of update
+sadsyed@sadsyed-vm:~$ docker commit 89231f532fa3 ubuntu:update
+sha256:201dd1aecdacd6a5511768d106d861f3d6fbc93b8f6991cee7d9d6d8b0001755
+
+# you can now start new ones based on the ubuntu:update image
+sadsyed@sadsyed-vm:~$ docker images
+REPOSITORY   TAG       IMAGE ID       CREATED         SIZE
+ubuntu       update    201dd1aecdac   6 seconds ago   211MB
+
+# you can inspect the changes that have been made inside this container with the docker diff command:
+sadsyed@sadsyed-vm:~$ docker diff 89231f532fa3
+C /root
+A /root/.bash_history
+C /var
+C /var/cache
+C /var/cache/apt
+D /var/cache/apt/pkgcache.bin
+D /var/cache/apt/srcpkgcache.bin
+C /var/lib
+C /var/lib/apt
+C /var/lib/apt/lists
+A /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_trusty-backports_universe_binary-amd64_Packages.gz
+A /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_trusty-updates_universe_binary-amd64_Packages.gz
+A /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_trusty_universe_binary-amd64_Packages.gz
+A /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_trusty-backports_multiverse_binary-amd64_Packages.gz
+A /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_trusty_restricted_binary-amd64_Packages.gz
+A /var/lib/apt/lists/security.ubuntu.com_ubuntu_dists_trusty-security_main_binary-amd64_Packages.gz
+A /var/lib/apt/lists/security.ubuntu.com_ubuntu_dists_trusty-security_restricted_binary-amd64_Packages.gz
+A /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_trusty-backports_restricted_binary-amd64_Packages.gz
+A /var/lib/apt/lists/esm.ubuntu.com_ubuntu_dists_trusty-infra-security_InRelease
+A /var/lib/apt/lists/security.ubuntu.com_ubuntu_dists_trusty-security_InRelease
+A /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_trusty-updates_main_binary-amd64_Packages.gz
+A /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_trusty_multiverse_binary-amd64_Packages.gz
+A /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_trusty-backports_main_binary-amd64_Packages.gz
+A /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_trusty-updates_multiverse_binary-amd64_Packages.gz
+A /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_trusty_main_binary-amd64_Packages.gz
+A /var/lib/apt/lists/esm.ubuntu.com_ubuntu_dists_trusty-infra-security_main_binary-amd64_Packages.gz
+A /var/lib/apt/lists/esm.ubuntu.com_ubuntu_dists_trusty-infra-updates_InRelease
+A /var/lib/apt/lists/esm.ubuntu.com_ubuntu_dists_trusty-infra-updates_main_binary-amd64_Packages.gz
+A /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_trusty-updates_InRelease
+A /var/lib/apt/lists/security.ubuntu.com_ubuntu_dists_trusty-security_multiverse_binary-amd64_Packages.gz
+A /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_trusty-backports_InRelease
+A /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_trusty-updates_restricted_binary-amd64_Packages.gz
+A /var/lib/apt/lists/security.ubuntu.com_ubuntu_dists_trusty-security_universe_binary-amd64_Packages.gz
+D /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_trusty_main_binary-amd64_Packages
+D /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_trusty_main_i18n_Translation-en
+D /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_trusty_restricted_binary-amd64_Packages
+D /var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_trusty_restricted_i18n_Translation-en

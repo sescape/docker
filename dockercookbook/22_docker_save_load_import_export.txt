@@ -1,0 +1,59 @@
+# 2.2 Saving Images and Containers as Tar files for sharing
+
+sadsyed@sadsyed-vm:~/docker/dockercookbook$ docker ps -a
+CONTAINER ID   IMAGE          COMMAND       CREATED          STATUS                      PORTS     NAMES
+89231f532fa3   ubuntu:14.04   "/bin/bash"   35 minutes ago   Exited (0) 35 minutes ago             elastic_ellis
+73a2ce2cf889   ubuntu:14.04   "/in/bash"    36 minutes ago   Created                               intelligent_lichterman
+6a8d51a16468   ubuntu:14.04   "sleep 360"   5 hours ago      Exited (0) 5 hours ago                testcopy
+
+# export a container to a new tarball:
+sadsyed@sadsyed-vm:~/docker/dockercookbook$ docker export 89231f532fa3 > update1908.tar
+sadsyed@sadsyed-vm:~/docker/dockercookbook$ ls -al
+total 192544
+drwxrwxr-x 4 sadsyed sadsyed      4096 Jan 18 20:08 .
+drwxrwxr-x 4 sadsyed sadsyed      4096 Jan 18 15:01 ..
+drwxrwxr-x 2 sadsyed sadsyed      4096 Jan  9 19:46 114
+drwxrwxr-x 2 sadsyed sadsyed      4096 Jan 13 22:24 115
+-rw-rw-r-- 1 sadsyed sadsyed      3271 Jan 18 14:57 119_sharing_data_bw_containers.txt
+-rw-rw-r-- 1 sadsyed sadsyed      1468 Jan 18 15:16 120_copying_data_to_and_from_containers.txt
+-rw-rw-r-- 1 sadsyed sadsyed      4213 Jan 18 19:40 21_docker_commit_to_make_a_container.txt
+-rw-rw-r-- 1 sadsyed sadsyed 197128704 Jan 18 20:08 update1908.tar
+
+# You could commit this container as a new image locally, but you could also use the
+# Docker import command:
+sadsyed@sadsyed-vm:~/docker/dockercookbook$ docker import - update < update1908.tar
+sha256:31efcca6458f2cd0550d97ecda9a6bdc5f7d7b4f106f55f7cb7ca5228f4328eb
+sadsyed@sadsyed-vm:~/docker/dockercookbook$ docker images
+REPOSITORY   TAG       IMAGE ID       CREATED          SIZE
+update       latest    31efcca6458f   3 seconds ago    187MB
+ubuntu       update    201dd1aecdac   36 minutes ago   211MB
+python       2.7       68e7be49c28c   21 months ago    902MB
+
+# if you would rather deal with images that you have already committed, you can use the load and save commands:
+sadsyed@sadsyed-vm:~/docker/dockercookbook$ docker save -o update1.tar update
+sadsyed@sadsyed-vm:~/docker/dockercookbook$ ls -al
+total 385064
+drwxrwxr-x 4 sadsyed sadsyed      4096 Jan 18 20:10 .
+drwxrwxr-x 4 sadsyed sadsyed      4096 Jan 18 15:01 ..
+drwxrwxr-x 2 sadsyed sadsyed      4096 Jan  9 19:46 114
+drwxrwxr-x 2 sadsyed sadsyed      4096 Jan 13 22:24 115
+-rw-rw-r-- 1 sadsyed sadsyed      3271 Jan 18 14:57 119_sharing_data_bw_containers.txt
+-rw-rw-r-- 1 sadsyed sadsyed      1468 Jan 18 15:16 120_copying_data_to_and_from_containers.txt
+-rw-rw-r-- 1 sadsyed sadsyed      4213 Jan 18 19:40 21_docker_commit_to_make_a_container.txt
+-rw-rw-r-- 1 sadsyed sadsyed 197128704 Jan 18 20:08 update1908.tar
+-rw------- 1 sadsyed sadsyed 197136896 Jan 18 20:10 update1.tar
+
+sadsyed@sadsyed-vm:~/docker/dockercookbook$ docker rmi update
+Untagged: update:latest
+Deleted: sha256:31efcca6458f2cd0550d97ecda9a6bdc5f7d7b4f106f55f7cb7ca5228f4328eb
+Deleted: sha256:211241a680a645f687e75f1b8c2b9bb4c2257c307b6f15399a1527ed695a045c
+
+sadsyed@sadsyed-vm:~/docker/dockercookbook$ docker load < update1.tar
+211241a680a6: Loading layer [==================================================>]  197.1MB/197.1MB
+Loaded image: update:latest
+sadsyed@sadsyed-vm:~/docker/dockercookbook$ docker images
+
+REPOSITORY   TAG       IMAGE ID       CREATED              SIZE
+update       latest    31efcca6458f   About a minute ago   187MB
+ubuntu       update    201dd1aecdac   37 minutes ago       211MB
+python       2.7       68e7be49c28c   21 months ago        902MB
